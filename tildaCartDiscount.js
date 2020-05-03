@@ -41,8 +41,24 @@ window.updateDiscount = function () {
 	window.tcart__reDrawTotal();
 	window.tcart.prodamount_discountsum = window.tcart.prodamount - window.tcart.amount;
 	window.tcart.prodamount_withdiscount = window.tcart.amount;
+
+	let productList = `<hr/><table width=100%><thead>
+	<td><b>Название</b></td><td><b>Цена</b></td><td><b>Количество</b></td><td><b>Сумма</b></td>
+	</thead><tbody>`;
+	for (let i = 0; i < window.tcart.products.length; i++) {
+		let product = window.tcart.products[i];
+		productList += `<tr><td>${product.name}</td><td>${window.tcart__showPrice(product.price)}</td><td>${product.quantity}</td><td>${window.tcart__showPrice(product.amount)}</td></tr>`;
+	}
+	productList += '</tbody></table>';
+	console.log(productList);
+
 	$(".t706__cartwin-totalamount-info").html(summaryInfo);
-	$('[name="discount"]').val(discount);
+	$('[name="productList"]').val(productList);
+	$('[name="payment_type"]').val(window.tcart.system === 'cash' ? 'При получении' : 'Онлайн');
+	$('[name="subtotal"]').val(window.tcart__showPrice(window.tcart.prodamount));
+	$('[name="order_summary"]').val(summaryInfo);
+
+
 };
 function wrapWithUpdate(func) {
 	'use strict';
