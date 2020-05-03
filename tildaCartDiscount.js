@@ -1,3 +1,5 @@
+var getterEmailAddress = 'margarita@fateev.pro';
+
 window.discountOptions = {
 	'Самовывоз': 25,
 	'Доставка': 20,
@@ -21,7 +23,8 @@ window.updateDiscount = function () {
 	console.log(`Option: ${option}`);
 	let discount = window.discountOptions[option];
 	if (discount > 0) {
-		window.tcart.amount = window.tcart.prodamount * (1.0 - discount / 100);
+		window.tcart.amount = window.tcart.prodamount - (window.tcart.amount / 100) * discount;
+		localStorage.setItem('sumWithDiscount', window.tcart.amount);
 	}
 	let summaryInfo = '';
 	if (discount > 0) {
@@ -48,6 +51,7 @@ function wrapWithUpdate(func) {
 
 $(document).ready(function () {
 	"use strict";
+
 	var radios = $(".t706 .t-form .t-radio__wrapper-delivery input");
 	if (radios.length) {
 		radios.change(function () {
@@ -58,4 +62,5 @@ $(document).ready(function () {
 	window.tcart__product__minus = wrapWithUpdate(window.tcart__product__minus);
 	window.tcart__product__del= wrapWithUpdate(window.tcart__product__del);
 	window.tcart__product__updateQuantity = wrapWithUpdate(window.tcart__product__updateQuantity);
+	window.tcart__openCart = wrapWithUpdate(window.tcart__openCart);
 });
