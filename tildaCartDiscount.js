@@ -1,5 +1,3 @@
-var getterEmailAddress = 'margarita@fateev.pro';
-
 window.discountOptions = {
 	'Самовывоз': 25,
 	'Доставка': 20,
