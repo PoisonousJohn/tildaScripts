@@ -47,7 +47,8 @@ window.deliveryValidation = {
     },
 
     parseDateTime: function (dateString, timeString) {
-        if (!dateString || dateString.includes('_') || timeString.includes('_')) return null;
+        if (!dateString) dateString = moment().format('DD-MM-YYYY');
+        if (dateString.includes('_') || timeString.includes('_')) return null;
         return moment(dateString + ' ' + timeString, 'DD-MM-YYYY HH:mm').toDate();
     },
 
