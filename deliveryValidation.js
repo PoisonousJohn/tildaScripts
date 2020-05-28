@@ -140,16 +140,6 @@ window.deliveryValidation = {
         });
         this.validateForm();
         this.getDateInput().attr('data-mindate', moment().format('YYYY-MM-DD'));
-        this.datePickerObserver = this.observeChanges(document.getElementById('form182822419'), function () {
-            console.log('Changes observed!');
-            var dateInput = window.deliveryValidation.getDateInput();
-            if (dateInput.length) {
-                console.log('Found date input!');
-                dateInput.attr('data-mindate', moment().format('YYYY-MM-DD'));
-                window.deliveryValidation.datePickerObserver.disconnect();
-            }
-        });
-
     },
 
 
