@@ -37,14 +37,10 @@ window.deliveryValidation = {
     },
 
     parseDate: function (dateString) {
-        var date = new Date();
-        if (dateString && !dateString.includes('_')) {
-            var momentDate = moment(dateString, 'DD-MM-YYYY');
-            if (!momentDate.isValid()) return null;
-            date = momentDate.toDate();
-        }
-
-        return date;
+        if (!dateString || dateString.includes('_')) return new Date();
+        var momentDate = moment(dateString, 'DD-MM-YYYY');
+        if (!momentDate.isValid()) return null;
+        return momentDate.toDate();
     },
 
     parseDateTime: function (dateString, timeString) {
