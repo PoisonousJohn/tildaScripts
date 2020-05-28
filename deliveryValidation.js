@@ -171,5 +171,5 @@ window.deliveryValidation = {
 
 setTimeout(function () {
     window.deliveryValidation.onReady();
-    window.setupDeliveryValidation();
+    window.deliveryValidation.setupDeliveryValidation();
 }, 1000);
