@@ -53,7 +53,8 @@ window.deliveryValidation = {
 
     validateTimeFormat: function () {
         var timeInput = this.getTimeInput();
-        if (timeInput.val().includes('_')) return null;
+        var val = timeInput.val();
+        if (!val || val.includes('_')) return null;
         var error = !this.parseTime(new Date(), timeInput.val()) ? 'Некорректный формат времени' : null;
         this.showInputError(timeInput, error);
         return error;
@@ -154,7 +155,7 @@ window.deliveryValidation = {
 
 
     setupDeliveryValidation: function (config) {
-        this.config = config;
+        if (config) this.config = config;
         jQuery(document).on('ready', function () {
             onReady();
         });
