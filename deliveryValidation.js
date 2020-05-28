@@ -50,6 +50,7 @@ window.deliveryValidation = {
         if (!dateString) dateString = moment().format('DD-MM-YYYY');
         if (!timeString) return null;
         if (dateString.includes('_') || timeString.includes('_')) return null;
+        if (this.validateDateFormat() || this.validateTimeFormat()) return null;
         return moment(dateString + ' ' + timeString, 'DD-MM-YYYY HH:mm').toDate();
     },
 
