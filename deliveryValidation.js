@@ -135,6 +135,7 @@ window.deliveryValidation = {
         jQuery('.t-submit').click(function (event) {
             if (window.deliveryValidation.validateForm()) {
                 event.stopPropagation();
+                window.deliveryValidation.getTimeInput().focus();
                 return false;
             }
         });
