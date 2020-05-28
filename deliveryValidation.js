@@ -12,8 +12,11 @@ window.deliveryValidation = {
     config: {
         timeInputName: "Время доставки ТОЛЬКО С 12:00",
         dateInputName: "Дата доставки ",
-        minTimeBufferMinutes: 15,
-        minTimeError: "Для приготовления заказа нужно минимум 15 минут.",
+        orderStartTime: "12:00",
+        orderEndTime: "22:30",
+        orderStartEndTimeError: "Мы принимаем заказы с 12:00 до 22:30",
+        minOrderPreparationTimeMinutes: 90,
+        minTimeError: "Для приготовления заказа нужно минимум 90 минут.",
     },
 
     observeChanges: function (element, callback) {
@@ -44,7 +47,8 @@ window.deliveryValidation = {
     },
 
     parseDateTime: function (dateString, timeString) {
-        return this.parseTime(this.parseDate(dateString), timeString);
+        if (dateString.includes('_') || timeString.includes('_')) return null;
+        return moment(dateString + ' ' + timeString, 'DD-MM-YYYY HH:mm').toDate();
     },
 
     validateTimeFormat: function () {
@@ -67,7 +71,16 @@ window.deliveryValidation = {
         var currentTime = new Date();
         var parsedTime = this.parseDateTime(this.getDateInput().val(), this.getTimeInput().val());
         if (!parsedTime) return null;
-        var minTime = new Date(currentTime.getTime() + this.config.minTimeBufferMinutes * 60 * 1000);
+        var startTime = moment(this.config.orderStartTime, 'HH:mm');
+        var endTime = moment(this.config.orderEndTime, 'HH:mm');
+        var parsedTimeOnly = moment(moment(parsedTime).format('HH:mm'), 'HH:mm');
+        console.log('parsedTime' + parsedTime);
+        console.log('startTime ' + startTime.toDate());
+        console.log('endTime ' + endTime.toDate());
+        console.log('parsedTimeOnly ' + parsedTimeOnly.toDate());
+        if (!parsedTimeOnly.isBetween(startTime, endTime) && !(parsedTimeOnly.isSame(startTime) || parsedTimeOnly.isSame(endTime)))
+            return this.config.orderStartEndTimeError;
+        var minTime = new Date(currentTime.getTime() + this.config.minOrderPreparationTimeMinutes * 60 * 1000);
         console.log('parsed time: ' + parsedTime + ', minTime: ' + minTime);
         if (parsedTime.getTime() < minTime.getTime()) return this.config.minTimeError;
     },
