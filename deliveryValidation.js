@@ -134,7 +134,6 @@ window.deliveryValidation = {
 
         jQuery('.t-submit').click(function (event) {
             if (window.deliveryValidation.validateForm()) {
-                alert('stop');
                 event.stopPropagation();
                 return false;
             }
