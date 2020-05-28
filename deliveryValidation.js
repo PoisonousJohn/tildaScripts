@@ -37,6 +37,7 @@ window.deliveryValidation = {
     },
 
     parseDate: function (dateString) {
+        if (!dateString) return new Date();
         var date = null;
         if (dateString && !dateString.includes('_')) {
             var momentDate = moment(dateString, 'DD-MM-YYYY');
