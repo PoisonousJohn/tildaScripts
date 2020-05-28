@@ -76,14 +76,9 @@ window.deliveryValidation = {
         var startTime = moment(this.config.orderStartTime, 'HH:mm');
         var endTime = moment(this.config.orderEndTime, 'HH:mm');
         var parsedTimeOnly = moment(moment(parsedTime).format('HH:mm'), 'HH:mm');
-        console.log('parsedTime' + parsedTime);
-        console.log('startTime ' + startTime.toDate());
-        console.log('endTime ' + endTime.toDate());
-        console.log('parsedTimeOnly ' + parsedTimeOnly.toDate());
         if (!parsedTimeOnly.isBetween(startTime, endTime) && !(parsedTimeOnly.isSame(startTime) || parsedTimeOnly.isSame(endTime)))
             return this.config.orderStartEndTimeError;
         var minTime = new Date(currentTime.getTime() + this.config.minOrderPreparationTimeMinutes * 60 * 1000);
-        console.log('parsed time: ' + parsedTime + ', minTime: ' + minTime);
         if (parsedTime.getTime() < minTime.getTime()) return this.config.minTimeError;
     },
 
@@ -97,9 +92,7 @@ window.deliveryValidation = {
     },
 
     onChangeDistinct: function (el, callback) {
-        console.log('on change distinct');
         el.keyup(function (event) {
-            console.log('input event');
             var input = jQuery(this);
             var val = input.val();
 
@@ -128,7 +121,6 @@ window.deliveryValidation = {
 
     onReady: function () {
         var timeInput = this.getTimeInput();
-        console.log('Time input: ' + timeInput);
         this.onChangeDistinct(timeInput, function () {
             window.deliveryValidation.validateForm();
         });
