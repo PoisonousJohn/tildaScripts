@@ -209,8 +209,3 @@ window.deliveryValidation = {
 ].forEach(function (item) {
     window.loadScript(item);
 });
-
-setTimeout(function () {
-    window.deliveryValidation.onReady();
-    window.deliveryValidation.setupDeliveryValidation();
-}, 1000);
