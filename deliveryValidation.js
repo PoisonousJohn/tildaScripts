@@ -70,7 +70,7 @@ window.deliveryValidation = {
 
     validateTimeRange: function () {
         this.validateFormat();
-        if (!this.isTimeEmpty() && !this.isDateEmpty()) {
+        if (!this.isTimeEmpty() && !this.isDateEmpty() && !this.hasErrors()) {
             var currentTime = moment();
             var parsedTime = moment(this.getDateInput().val() + ' ' + this.getTimeInput().val(), 'DD-MM-YYYY HH:mm');
             if (!parsedTime.isValid()) return null;
