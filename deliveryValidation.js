@@ -8,8 +8,9 @@ window.loadScript = function (scriptObj) {
 };
 
 window.deliveryValidation = {
-    datePickerObserver: null,
     config: {
+        timeDeliveryToggleName: "Хотите получить заказ как можно скорее или к определенному времени",
+        timeDeliveryVisibleValue: "К определенному времени",
         timeInputName: "Время доставки ТОЛЬКО С 12:00",
         dateInputName: "Дата доставки ",
         orderStartTime: "12:00",
@@ -17,6 +18,12 @@ window.deliveryValidation = {
         orderStartEndTimeError: "Мы принимаем заказы с 12:00 до 22:30",
         minOrderPreparationTimeMinutes: 90,
         minTimeError: "Для приготовления заказа нужно минимум 90 минут.",
+        incorrectDateError: "Пожалуйста введите дату в формате ДД-ММ-ГГГГ",
+        incorrectTimeError: "Пожалуйста введите время в формате ЧЧ:ММ",
+    },
+    errors: {
+        time: null,
+        date: null
     },
 
     observeChanges: function (element, callback) {
@@ -25,71 +32,100 @@ window.deliveryValidation = {
         return observer;
     },
 
-    parseTime: function (date, timeString) {
-        if (!date || !timeString) return null;
-
-        var timeComponents = timeString.split(':');
-        var hours = parseInt(timeComponents[0]);
-        var minutes = parseInt(timeComponents[1]);
-        if (hours < 0 || hours > 23) return null;
-        if (minutes < 0 || minutes > 59) return null;
-        date.setHours(timeComponents[0]);
-        date.setMinutes(timeComponents[1]);
-
-        return date;
+    isTimeValid: function () {
+        var val = this.getTimeInput().val();
+        if (!val || val.includes('_')) return true;
+        return moment(val, 'HH:mm').isValid();
     },
 
-    parseDate: function (dateString) {
-        if (!dateString || dateString.includes('_')) return new Date();
-        var momentDate = moment(dateString, 'DD-MM-YYYY');
-        if (!momentDate.isValid()) return null;
-        return momentDate.toDate();
+    isDateValid: function () {
+        var val = this.getDateInput().val();
+        if (!val || val.includes('_')) return true;
+        return moment(val, 'DD-MM-YYYY').isValid();
     },
 
-    parseDateTime: function (dateString, timeString) {
-        if (!dateString) dateString = moment().format('DD-MM-YYYY');
-        if (!timeString) return null;
-        if (dateString.includes('_') || timeString.includes('_')) return null;
-        if (this.validateDateFormat() || this.validateTimeFormat()) return null;
-        return moment(dateString + ' ' + timeString, 'DD-MM-YYYY HH:mm').toDate();
+    showErrors: function () {
+        this.showInputError(this.getTimeInput(), this.errors.time);
+        this.showInputError(this.getDateInput(), this.errors.date);
     },
 
-    validateTimeFormat: function () {
-        var timeInput = this.getTimeInput();
-        var val = timeInput.val();
-        if (!val || val.includes('_')) return null;
-        var error = !this.parseTime(new Date(), timeInput.val()) ? 'Некорректный формат времени' : null;
-        this.showInputError(timeInput, error);
-        return error;
+    validateFormat: function () {
+        this.errors.date = !this.isDateValid() ? this.config.incorrectDateError : null;
+        this.errors.time = !this.isTimeValid() ? this.config.incorrectTimeError : null;
     },
 
-    validateDateFormat: function () {
-        var dateInput = this.getDateInput();
-        var error = !this.parseDate(dateInput.val()) ? 'Некорректный формат даты, пожалуйста введите дату в формате ДД-ММ-ГГГГ' : null;
-        this.showInputError(dateInput, error);
-        return error;
+    isDateEmpty: function () {
+        var val = this.getDateInput().val();
+        return !val || val.includes('_');
+    },
+
+    isTimeEmpty: function () {
+        var val = this.getTimeInput().val();
+        return !val || val.includes('_');
+    },
+
+    hasErrors: function () {
+        return this.errors.date || this.errors.time;
     },
 
     validateTimeRange: function () {
-        var currentTime = new Date();
-        var parsedTime = this.parseDateTime(this.getDateInput().val(), this.getTimeInput().val());
-        if (!parsedTime) return null;
-        var startTime = moment(this.config.orderStartTime, 'HH:mm');
-        var endTime = moment(this.config.orderEndTime, 'HH:mm');
-        var parsedTimeOnly = moment(moment(parsedTime).format('HH:mm'), 'HH:mm');
-        if (!parsedTimeOnly.isBetween(startTime, endTime) && !(parsedTimeOnly.isSame(startTime) || parsedTimeOnly.isSame(endTime)))
-            return this.config.orderStartEndTimeError;
-        var minTime = new Date(currentTime.getTime() + this.config.minOrderPreparationTimeMinutes * 60 * 1000);
-        if (parsedTime.getTime() < minTime.getTime()) return this.config.minTimeError;
+        this.validateFormat();
+        if (!this.isTimeEmpty() && !this.isDateEmpty()) {
+            var currentTime = moment();
+            var parsedTime = moment(this.getDateInput().val() + ' ' + this.getTimeInput().val(), 'DD-MM-YYYY HH:mm');
+            if (!parsedTime.isValid()) return null;
+            var startTime = moment(this.config.orderStartTime, 'HH:mm');
+            var endTime = moment(this.config.orderEndTime, 'HH:mm');
+            var parsedTimeOnly = moment(parsedTime.format('HH:mm'), 'HH:mm');
+            var isInRange = parsedTimeOnly.isBetween(startTime, endTime) || parsedTimeOnly.isSame(startTime) || parsedTimeOnly.isSame(endTime);
+            var minTime = currentTime.add(this.config.minOrderPreparationTimeMinutes, 'minutes');
+            console.log(JSON.stringify({
+                parsedTime, startTime, endTime, parsedTimeOnly, minTime
+            }));
+            var isPreparationTimeSatisfied = parsedTime.isAfter(minTime);
+            this.errors.time = !isInRange ? this.config.orderStartEndTimeError : null;
+            if (!this.errors.time) {
+                this.errors.time = !isPreparationTimeSatisfied ? this.config.minTimeError : null;
+            }
+        }
+        this.showErrors();
+    },
+
+    clearErrors: function () {
+        this.errors.time = null;
+        this.errors.date = null;
+    },
+
+    validateRequiredFields: function () {
+        if (this.isTimeEmpty())
+            this.errors.time = 'Обязательное поле';
+        if (this.isDateEmpty())
+            this.errors.date = 'Обязательное поле';
+        this.showErrors();
     },
 
     validateForm: function () {
-        var dateError = window.deliveryValidation.validateDateFormat();
-        var timeError = window.deliveryValidation.validateTimeFormat();
-        var rangeError = window.deliveryValidation.validateTimeRange();
-        var error = dateError || timeError || rangeError;
-        this.showInputError(this.getTimeInput(), timeError || rangeError);
-        return error;
+        this.clearErrors();
+        this.showErrors();
+        if (this.isTimeValidationRequired())
+            this.validateTimeRange();
+        return this.hasErrors();
+    },
+
+    isTimeValidationRequired: function () {
+        return this.getVisibilityToggle().filter(':checked').val() == this.config.timeDeliveryVisibleValue;
+    },
+
+    updateFieldsVisibility: function () {
+        var visible = this.isTimeValidationRequired();
+        if (visible) {
+            this.getTimeInput().parents('.t-input-group').show();
+            this.getDateInput().parents('.t-input-group').show();
+        }
+        else {
+            this.getTimeInput().parents('.t-input-group').hide();
+            this.getDateInput().parents('.t-input-group').hide();
+        }
     },
 
     onChangeDistinct: function (el, callback) {
@@ -110,6 +146,10 @@ window.deliveryValidation = {
         else
             errorControl.removeClass('js-error-control-box');
         el.next().text(error);
+    },
+
+    getVisibilityToggle: function () {
+        return jQuery('[name="' + this.config.timeDeliveryToggleName + '"]');
     },
 
     getTimeInput: function () {
@@ -137,12 +177,18 @@ window.deliveryValidation = {
         });
 
         jQuery('.t-submit').click(function (event) {
-            if (window.deliveryValidation.validateForm()) {
+            window.deliveryValidation.validateForm();
+            window.deliveryValidation.validateRequiredFields();
+            if (window.deliveryValidation.hasErrors()) {
                 event.stopPropagation();
                 window.deliveryValidation.getTimeInput().focus();
                 return false;
             }
         });
+        this.getVisibilityToggle().each(function () {
+            jQuery(this).on('change', function () { window.deliveryValidation.updateFieldsVisibility(); });
+        });
+        this.updateFieldsVisibility();
         this.validateForm();
         this.getDateInput().attr('data-mindate', moment().format('YYYY-MM-DD'));
     },
